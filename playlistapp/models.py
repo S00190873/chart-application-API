@@ -15,18 +15,29 @@ class ChartInfo(db.Model):
             'Artist': self.artist
         }
     
-    # Function to dynamically select the appropriate database table based on the country name
-def get_chart_info_model(country_name):
-    table_name = f'chartinfo{country_name}2023'  # Construct table name based on country_name
+# Dictionary to store already defined model classes
+defined_models = {}
 
+# Function to dynamically select the appropriate database table based on the country name
+def get_chart_info_model(country_name, year):
+    table_name = f'chartinfo{country_name}{year}'
+    
+    # Check if the model class has already been defined
+    if table_name in defined_models:
+        return defined_models[table_name]
+    
     # Create a new model class with the dynamically generated table name
     chart_info_model = type(f'ChartInfo{country_name}2023', (ChartInfo, db.Model), {
         '__tablename__': table_name,
     })
+    
+    # Store the defined model class for future use
+    defined_models[table_name] = chart_info_model
+    
     return chart_info_model
 
-def fetch_and_serialize_chart_info(country_name):
-    chart_info_model = get_chart_info_model(country_name)
+def fetch_and_serialize_chart_info(country_name, year):
+    chart_info_model = get_chart_info_model(country_name, year)
 
     if chart_info_model is None:
         return None, "Invalid country name"
